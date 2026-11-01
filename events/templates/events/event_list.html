@@ -1,0 +1,44 @@
+{% extends 'events/base.html' %}
+
+{% block title %}Aktualne Wydarzenia – EventHub{% endblock %}
+
+{% block content %}
+    <h2>Nadchodzące wydarzenia</h2>
+    <p>Przeglądaj najnowsze konferencje, warsztaty i spotkania branżowe:</p>
+
+    <form method="get" action="{% url 'events:event-list' %}" style="margin: 20px 0; display: flex; gap: 10px;">
+        <input type="text" name="q" placeholder="Szukaj po tytule..." value="{{ q|default:'' }}" style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; flex: 1; max-width: 400px;">
+        <button type="submit" class="btn" style="cursor: pointer;">Szukaj</button>
+    </form>
+
+    <div class="category-menu" style="margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="{% url 'events:event-list' %}" class="btn {% if not current_category %}active{% endif %}">Wszystkie</a>
+        {% for cat in categories %}
+            <a href="{% url 'events:events-by-category' cat.slug %}" class="btn {% if current_category == cat %}active{% endif %}">{{ cat.name }}</a>
+        {% endfor %}
+    </div>
+
+    {% if events %}
+        <div class="event-grid">
+            {% for event in events %}
+                <div class="card">
+                    <div>
+                        <span class="badge">{{ event.category.name }}</span>
+                        <h2>{{ event.title }}</h2>
+                        <p class="meta">
+                            📅 {{ event.date|date:"d M Y, H:i" }}<br>
+                            📍 {{ event.location }}<br>
+                            💰 {% if event.price == 0 %}<strong>Bezpłatne</strong>{% else %}{{ event.price }} PLN{% endif %}
+                        </p>
+                        <p>{{ event.description|truncatewords:20 }}</p>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <a href="{% url 'events:event-detail' event.slug %}" class="btn">Zobacz szczegóły</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="margin-top: 20px;">Brak opublikowanych wydarzeń w tej chwili.</p>
+    {% endif %}
+{% endblock %}

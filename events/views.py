@@ -1,6 +1,28 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from .models import Event, Category
 
-from django.http import HttpResponse
 
-def welcome_view(request):
-    return HttpResponse("Witaj w platformie EventHub – systemie obsługi wydarzeń i biletów!")
+def event_list(request):
+    """Widok listy opublikowanych wydarzeń."""
+    events = Event.objects.filter(is_published=True).select_related('category', 'organizer')
+    return render(request, 'events/event_list.html', {'events': events})
+
+
+def event_detail(request, slug):
+    """Widok pojedynczego wydarzenia na podstawie parametru slug."""
+    event = get_object_or_404(
+        Event.objects.select_related('category', 'organizer'),
+        slug=slug,
+        is_published=True
+    )
+    return render(request, 'events/event_detail.html', {'event': event})
+
+
+def events_by_category(request, category_slug):
+    """Wydarzenia przefiltrowane według kategorii."""
+    category = get_object_or_404(Category, slug=category_slug)
+    events = category.events.filter(is_published=True).select_related('organizer')
+    return render(request, 'events/event_list.html', {
+        'events': events,
+        'current_category': category
+    })
